@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import Thread from "../models/thread.model";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
+import Community from "../models/community.model";
 
 interface Params {
   text: string;
   author: string;
-  communityId: string;
+  communityId: string | null;
   path: string;
 }
 
@@ -18,13 +19,18 @@ export async function createThread({
   communityId,
   path,
 }: Params) {
-  connectToDB();
-
   try {
+    connectToDB();
+
+    const communityIdObject = await Community.findOne(
+      { id: communityId },
+      { _id: 1 }
+    );
+
     const createThread = await Thread.create({
       text,
       author,
-      community: null,
+      community: communityIdObject,
     });
 
     // Update user model
